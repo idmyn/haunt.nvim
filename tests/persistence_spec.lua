@@ -85,6 +85,70 @@ describe("haunt.persistence", function()
 		end)
 	end)
 
+	describe("storage_id config", function()
+		local config
+
+		before_each(function()
+			config = require("haunt.config")
+		end)
+
+		it("custom storage_id produces different path than git default", function()
+			local default_path = persistence.get_storage_path()
+
+			helpers.reset_modules()
+			persistence = require("haunt.persistence")
+			config = require("haunt.config")
+
+			config.setup({ storage_id = function() return "my-scope" end })
+			local custom_path = persistence.get_storage_path()
+
+			assert.are_not.equal(default_path, custom_path)
+		end)
+
+		it("storage_id takes precedence over git branch", function()
+			config.setup({ storage_id = function() return "my-scope" end })
+			local path = persistence.get_storage_path()
+			local expected_hash = vim.fn.sha256("my-scope"):sub(1, 12)
+			assert.is_truthy(path:find(expected_hash, 1, true))
+		end)
+
+		it("storage_id returning nil falls back to git", function()
+			local default_path = persistence.get_storage_path()
+
+			helpers.reset_modules()
+			persistence = require("haunt.persistence")
+			config = require("haunt.config")
+
+			config.setup({ storage_id = function() return nil end })
+			local fallback_path = persistence.get_storage_path()
+
+			assert.are.equal(default_path, fallback_path)
+		end)
+
+		it("storage_id that errors falls back to git", function()
+			local default_path = persistence.get_storage_path()
+
+			helpers.reset_modules()
+			persistence = require("haunt.persistence")
+			config = require("haunt.config")
+
+			config.setup({ storage_id = function() error("boom") end })
+			local fallback_path = persistence.get_storage_path()
+
+			assert.are.equal(default_path, fallback_path)
+		end)
+
+		it("per_branch_bookmarks=false still overrides storage_id", function()
+			config.setup({
+				per_branch_bookmarks = false,
+				storage_id = function() return "my-scope" end,
+			})
+			local path = persistence.get_storage_path()
+			local custom_hash = vim.fn.sha256("my-scope"):sub(1, 12)
+			assert.is_falsy(path:find(custom_hash, 1, true))
+		end)
+	end)
+
 	describe("ensure_data_dir", function()
 		it("creates and returns valid directory", function()
 			local data_dir = persistence.ensure_data_dir()

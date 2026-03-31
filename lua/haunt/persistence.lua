@@ -169,6 +169,16 @@ function M.get_storage_path()
 		return data_dir .. hash .. ".json"
 	end
 
+	-- Use custom storage_id if provided
+	if config.storage_id then
+		local ok, id = pcall(config.storage_id)
+		if ok and id then
+			local hash = vim.fn.sha256(id):sub(1, 12)
+			return data_dir .. hash .. ".json"
+		end
+		-- storage_id returned nil or errored — fall through to git
+	end
+
 	local branch = git_info.branch or "__default__"
 	local key = repo_root .. "|" .. branch
 	local hash = vim.fn.sha256(key):sub(1, 12)

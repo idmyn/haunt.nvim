@@ -117,9 +117,11 @@ function M.build_picker_items(bookmarks)
 			filename = filename,
 			pos = { bm.line, 0 },
 			text = text,
+			comment = bm.note,
 			note = bm.note,
 			id = bm.id,
-			line = bm.line,
+			lnum = bm.line,
+			lnum = bm.line,
 		})
 	end
 	return items
@@ -143,7 +145,7 @@ function M.jump_to_bookmark(item)
 	end
 
 	-- Go to line and center
-	vim.api.nvim_win_set_cursor(0, { item.line, 0 })
+	vim.api.nvim_win_set_cursor(0, { item.lnum, 0 })
 	vim.cmd("normal! zz")
 end
 
@@ -181,7 +183,7 @@ function M.handle_edit_annotation(ctx)
 	end
 
 	-- Execute annotate in the buffer context
-	M.with_buffer_context(bufnr, item.line, function()
+	M.with_buffer_context(bufnr, item.lnum, function()
 		api_module.annotate(annotation)
 	end)
 

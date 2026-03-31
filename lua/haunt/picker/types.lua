@@ -15,7 +15,7 @@
 ---@field text string Formatted display text
 ---@field note string|nil Annotation text if present
 ---@field id string Unique bookmark identifier
----@field line number 1-based line number
+---@field lnum number 1-based line number
 
 ---@class PickerModule
 ---@field show fun(opts?: table): boolean Show the picker

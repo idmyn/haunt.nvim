@@ -76,7 +76,7 @@ function M.show(opts)
 	local max_line_width = 0
 	for _, item in ipairs(items) do
 		max_filename_width = math.max(max_filename_width, #item.relpath)
-		max_line_width = math.max(max_line_width, #tostring(item.line))
+		max_line_width = math.max(max_line_width, #tostring(item.lnum))
 	end
 
 	-- Icon width (icon + space)
@@ -155,7 +155,7 @@ function M.show(opts)
 						display = make_display,
 						ordinal = item.text,
 						filename = item.file,
-						lnum = item.line,
+						lnum = item.lnum,
 					}
 				end,
 			}),
@@ -228,7 +228,7 @@ function M.show(opts)
 					display = make_display,
 					ordinal = item.text,
 					filename = item.file,
-					lnum = item.line,
+					lnum = item.lnum,
 				}
 			end,
 		}),

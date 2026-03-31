@@ -34,6 +34,7 @@ M.DEFAULT_DATA_DIR = vim.fn.stdpath("data") .. "/haunt/"
 ---@field picker? "snacks"|"telescope"|"fzf"|"auto" Which picker to use: "snacks", "telescope", "fzf", or "auto" (default: "auto"). "auto" tries Snacks first, then Telescope, then fzf-lua, then vim.ui.select
 ---@field picker_keys table<string, table> Keybindings for picker actions (default: {delete = {key = 'd', mode = {'n'}}, edit_annotation = {key = 'a', mode = {'n'}}})
 ---@field per_branch_bookmarks? boolean Whether bookmarks are scoped per git branch (default: true). When false, bookmarks persist across all branches in the same repository.
+---@field storage_id? fun(): string|nil Custom function that returns a string used to scope bookmark storage. When set, the returned string is hashed to produce the storage filename. If the function returns nil or errors, falls back to git-based scoping. `per_branch_bookmarks = false` still takes precedence.
 --minidoc_replace_start M.DEFAULT = {
 M.DEFAULT = {
 	--minidoc_replace_end

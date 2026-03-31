@@ -295,6 +295,37 @@ Keep your annotations scoped to your branches.
 
 https://github.com/user-attachments/assets/1d2b996c-b0be-459c-9ff0-63e7a1ebb936
 
+### Custom Storage Scoping (`storage_id`)
+
+By default, bookmarks are scoped per git repo + branch. If you use a non-git VCS
+(jj, hg, etc.) or need custom scoping, provide a `storage_id` function that
+returns a string key. The plugin hashes it for the storage filename. Return `nil`
+to fall back to git-based scoping. `per_branch_bookmarks = false` still takes
+precedence.
+
+``` lua
+-- jj bookmark scoping
+require("haunt").setup({
+  storage_id = function()
+    local root = vim.fn.systemlist("jj root")
+    if vim.v.shell_error ~= 0 or not root[1] then return nil end
+    local bm = vim.fn.systemlist("jj bookmark list -r @ -T 'name ++ \"\\n\"'")
+    if vim.v.shell_error == 0 and bm[1] and bm[1] ~= "" then
+      return root[1] .. "|" .. bm[1]
+    end
+    return root[1] .. "|__default__"
+  end,
+})
+
+-- scope by environment variable
+require("haunt").setup({
+  storage_id = function()
+    local env = os.getenv("MY_PROJECT_ENV")
+    return env and (vim.fn.getcwd() .. "|" .. env) or nil
+  end,
+})
+```
+
 ### Project-Specific Bookmarks
 Use `change_data_dir` to scope bookmarks per project/directory:
 

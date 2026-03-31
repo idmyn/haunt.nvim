@@ -106,7 +106,7 @@ function M.show(opts)
 	local lookup = {}
 
 	for _, item in ipairs(items) do
-		local label = string.format("%s:%d:%d", item.file, item.line, item.pos[2] or 0)
+		local label = string.format("%s:%d:%d", item.file, item.lnum, item.pos[2] or 0)
 		if item.note and item.note ~= "" then
 			label = label .. " " .. item.note
 		end

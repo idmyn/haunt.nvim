@@ -156,6 +156,10 @@ local config = require("haunt.config")
 ---@type boolean
 local _initialized = false
 
+-- Track storage path to detect when storage_id changes
+---@type string|nil
+local _last_storage_path = nil
+
 function M._ensure_initialized()
 	if _initialized then
 		return
@@ -185,6 +189,48 @@ function M._setup_restoration_autocmd()
 			require("haunt.api").cleanup_buffer_tracking(args.buf)
 		end,
 		desc = "Clean up bookmark restoration tracking",
+	})
+
+	-- Detect when storage path changes (e.g., storage_id returns a different value
+	-- after switching git branches or jj bookmarks) and reload bookmarks
+	vim.api.nvim_create_autocmd("BufEnter", {
+		group = augroup,
+		callback = function()
+			local ok, path = pcall(function()
+				return require("haunt.persistence").get_storage_path()
+			end)
+			if not ok or not path then
+				return
+			end
+			if _last_storage_path and path ~= _last_storage_path then
+				_last_storage_path = path
+				local store = require("haunt.store")
+				local display = require("haunt.display")
+				local restoration = require("haunt.restoration")
+				local api = require("haunt.api")
+
+				store.save()
+
+				for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+					if vim.api.nvim_buf_is_loaded(bufnr) and vim.api.nvim_buf_is_valid(bufnr) then
+						display.clear_buffer_marks(bufnr)
+						display.clear_buffer_signs(bufnr)
+					end
+				end
+
+				restoration.reset_tracking()
+				store.reload()
+
+				for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+					if vim.api.nvim_buf_is_loaded(bufnr) and vim.api.nvim_buf_is_valid(bufnr) then
+						api.restore_buffer_bookmarks(bufnr)
+					end
+				end
+			else
+				_last_storage_path = path
+			end
+		end,
+		desc = "Reload bookmarks when storage path changes",
 	})
 
 	-- Restore bookmarks for already-loaded buffers (they missed BufReadPost)
